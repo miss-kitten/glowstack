@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import './App.css'
+import GlowStackLogo from './GlowStackLogo.jsx'
 
 // ── Constants ──────────────────────────────────────────────────────────────
 
@@ -23,6 +24,23 @@ const GOAL_ACTIVES = {
   'Barrier repair': ['Peptides', 'Niacinamide'],
 }
 
+// Patterns used to detect actives from raw ingredients text
+const ACTIVE_PATTERNS = {
+  AHA: /\b(glycolic acid|lactic acid|mandelic acid|tartaric acid|citric acid|alpha.?hydroxy)\b/i,
+  BHA: /\b(salicylic acid|beta.?hydroxy)\b/i,
+  Retinol: /\b(retinol|retinal|retinoic acid|retinaldehyde|retinyl palmitate|retinyl acetate|vitamin a)\b/i,
+  'Vitamin C': /\b(ascorbic acid|ascorbyl|vitamin c|sodium ascorbyl phosphate|magnesium ascorbyl)\b/i,
+  Niacinamide: /\b(niacinamide|nicotinamide)\b/i,
+  'Benzoyl Peroxide': /\b(benzoyl peroxide)\b/i,
+  Peptides: /\b(peptide|palmitoyl|tripeptide|hexapeptide|oligopeptide|acetyl tetrapeptide|matrixyl|argireline)\b/i,
+  SPF: /\b(avobenzone|octinoxate|octisalate|oxybenzone|zinc oxide|titanium dioxide|homosalate|octocrylene|bemotrizinol|bisoctrizole)\b/i,
+}
+
+function detectActivesFromText(text) {
+  if (!text) return []
+  return ACTIVES.filter((active) => ACTIVE_PATTERNS[active]?.test(text))
+}
+
 const ACTIVE_EXPLANATIONS = {
   AHA: 'exfoliates dead skin cells for a brighter complexion',
   BHA: 'unclogs pores and reduces breakouts',
@@ -35,12 +53,89 @@ const ACTIVE_EXPLANATIONS = {
 }
 
 const NAV_ITEMS = [
-  { id: 'dashboard', icon: '✦', label: 'Dashboard' },
-  { id: 'products', icon: '✿', label: 'My Products' },
-  { id: 'routine', icon: '☀', label: 'My Routine' },
-  { id: 'goals', icon: '◎', label: 'Skin Goals' },
-  { id: 'account', icon: '◷', label: 'Account' },
+  { id: 'dashboard', label: 'Dashboard' },
+  { id: 'products', label: 'My Products' },
+  { id: 'routine', label: 'My Routine' },
+  { id: 'goals', label: 'Skin Goals' },
+  { id: 'account', label: 'Account' },
 ]
+
+function NavIcon({ id, active }) {
+  const base = {
+    width: 16,
+    height: 16,
+    viewBox: '0 0 16 16',
+    fill: 'none',
+    'aria-hidden': true,
+    style: { flexShrink: 0 },
+  }
+  const stroke = {
+    stroke: 'currentColor',
+    strokeWidth: 1.5,
+    strokeLinecap: 'round',
+    strokeLinejoin: 'round',
+  }
+
+  if (id === 'dashboard') {
+    // Active: four filled rounded squares; Inactive: same squares, outline only
+    const rects = [
+      { x: 2,   y: 2   },
+      { x: 8.5, y: 2   },
+      { x: 2,   y: 8.5 },
+      { x: 8.5, y: 8.5 },
+    ]
+    return (
+      <svg {...base}>
+        {rects.map((r) =>
+          active ? (
+            <rect key={`${r.x}-${r.y}`} x={r.x} y={r.y} width="5.5" height="5.5" rx="1.5" fill="#C2477A" />
+          ) : (
+            <rect key={`${r.x}-${r.y}`} x={r.x} y={r.y} width="5.5" height="5.5" rx="1.5" fill="none" {...stroke} />
+          )
+        )}
+      </svg>
+    )
+  }
+
+  if (id === 'products') {
+    return (
+      <svg {...base}>
+        <path d="M6 2h4M8 2v3M5 5h6l1 8H4L5 5z" {...stroke} />
+        <path d="M6.5 8.5c0 .8.7 1.5 1.5 1.5s1.5-.7 1.5-1.5" {...stroke} />
+      </svg>
+    )
+  }
+
+  if (id === 'routine') {
+    return (
+      <svg {...base}>
+        <path d="M2 4.5h12M2 8h9M2 11.5h7" {...stroke} />
+        <circle cx="12" cy="11.5" r="2" {...stroke} />
+      </svg>
+    )
+  }
+
+  if (id === 'goals') {
+    return (
+      <svg {...base}>
+        <circle cx="8" cy="8" r="6" {...stroke} />
+        <circle cx="8" cy="8" r="3" {...stroke} />
+        <circle cx="8" cy="8" r="1" fill="currentColor" />
+      </svg>
+    )
+  }
+
+  if (id === 'account') {
+    return (
+      <svg {...base}>
+        <circle cx="8" cy="5" r="2.5" {...stroke} />
+        <path d="M3 14c0-2.8 2.2-4 5-4s5 1.2 5 4" {...stroke} />
+      </svg>
+    )
+  }
+
+  return null
+}
 
 const PAGE_META = {
   dashboard: { title: 'Dashboard', sub: "Here's your skincare summary." },
@@ -120,21 +215,24 @@ function Sidebar({ active, onNav, isOpen, onClose }) {
       {isOpen && <div className="sidebar-overlay" onClick={onClose} />}
       <aside className={`sidebar ${isOpen ? 'sidebar-open' : ''}`}>
         <div className="sidebar-logo">
-          <div className="logo-icon">✿</div>
-          <h1>GlowCheck</h1>
+          <GlowStackLogo style={{ height: 40, width: 'auto', flexShrink: 0 }} />
           <button className="sidebar-close" onClick={onClose} aria-label="Close menu">✕</button>
         </div>
-        <nav className="nav-section">
-          {NAV_ITEMS.map((item) => (
-            <button
-              key={item.id}
-              className={`nav-item ${active === item.id ? 'active' : ''}`}
-              onClick={() => handleNav(item.id)}
-            >
-              <span className="nav-icon">{item.icon}</span>
-              {item.label}
-            </button>
-          ))}
+        <nav className="nav-section" aria-label="Main navigation">
+          {NAV_ITEMS.map((item) => {
+            const isActive = active === item.id
+            return (
+              <button
+                key={item.id}
+                className={`nav-item ${isActive ? 'active' : ''}`}
+                onClick={() => handleNav(item.id)}
+                aria-current={isActive ? 'page' : undefined}
+              >
+                <NavIcon id={item.id} active={isActive} />
+                {item.label}
+              </button>
+            )
+          })}
         </nav>
         <div className="sidebar-footer">
           <div className="user-chip">
@@ -153,12 +251,12 @@ function Sidebar({ active, onNav, isOpen, onClose }) {
 function ConflictBanner({ conflicts }) {
   if (!conflicts.length) return null
   return (
-    <div className="conflict-banner">
+    <div className="conflict-banner" role="alert" aria-live="polite">
       <div className="conflict-banner-title">⚠ Ingredient Conflicts Detected</div>
       {conflicts.map((c, i) => (
         <div key={i} className="conflict-item">
-          <strong>{c.a} + {c.b}:</strong> {c.message}. {c.suggestion}.
-          {c.advisory && <span className="advisory-pill">Advisory</span>}
+          <strong>{c.a} + {c.b}:</strong> {c.message}. Suggestion: {c.suggestion}.
+          {c.advisory && <span className="advisory-pill">Advisory only</span>}
         </div>
       ))}
     </div>
@@ -223,9 +321,16 @@ function Dashboard({ products, amRoutine, pmRoutine, selectedGoals, onNav }) {
                 <div key={gs.goal} className="goal-row">
                   <div className="goal-row-top">
                     <span className="goal-name">{gs.goal}</span>
-                    <span className="goal-pct">{gs.score}%</span>
+                    <span className="goal-pct" aria-hidden="true">{gs.score}%</span>
                   </div>
-                  <div className="progress-bar">
+                  <div
+                    className="progress-bar"
+                    role="progressbar"
+                    aria-valuenow={gs.score}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-label={`${gs.goal}: ${gs.score}%`}
+                  >
                     <div className="progress-fill" style={{ width: `${gs.score}%` }} />
                   </div>
                 </div>
@@ -289,10 +394,94 @@ function Dashboard({ products, amRoutine, pmRoutine, selectedGoals, onNav }) {
 }
 
 function ProductsPage({ products, onAdd, onDelete }) {
+  // Search state
+  const [query, setQuery] = useState('')
+  const [searchResults, setSearchResults] = useState([])
+  const [searching, setSearching] = useState(false)
+  const [searchError, setSearchError] = useState('')
+  const [showDropdown, setShowDropdown] = useState(false)
+  const [manualMode, setManualMode] = useState(false)
+
+  // Form state
   const [name, setName] = useState('')
+  const [brand, setBrand] = useState('')
   const [selectedIngredients, setSelectedIngredients] = useState([])
   const [tag, setTag] = useState('am')
-  const [error, setError] = useState('')
+  const [formError, setFormError] = useState('')
+
+  const searchRef = useRef(null)
+  const debounceRef = useRef(null)
+  const abortRef = useRef(null)
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    function onPointerDown(e) {
+      if (searchRef.current && !searchRef.current.contains(e.target)) {
+        setShowDropdown(false)
+      }
+    }
+    document.addEventListener('pointerdown', onPointerDown)
+    return () => document.removeEventListener('pointerdown', onPointerDown)
+  }, [])
+
+  function handleQueryChange(e) {
+    const val = e.target.value
+    setQuery(val)
+    setSearchError('')
+    setManualMode(false)
+
+    clearTimeout(debounceRef.current)
+
+    if (!val.trim()) {
+      setSearchResults([])
+      setShowDropdown(false)
+      setSearching(false)
+      return
+    }
+
+    setSearching(true)
+    setShowDropdown(true)
+
+    debounceRef.current = setTimeout(() => {
+      if (abortRef.current) abortRef.current.abort()
+      const controller = new AbortController()
+      abortRef.current = controller
+
+      fetch(
+        `https://world.openbeautyfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(val)}&json=1&page_size=8&fields=product_name,brands,ingredients_text`,
+        { signal: controller.signal }
+      )
+        .then((r) => r.json())
+        .then((data) => {
+          const products = (data.products || []).filter((p) => p.product_name)
+          setSearchResults(products)
+          setShowDropdown(true)
+          setSearching(false)
+        })
+        .catch((err) => {
+          if (err.name === 'AbortError') return
+          setSearchError('Search failed. You can add the product manually below.')
+          setSearching(false)
+          setShowDropdown(false)
+        })
+    }, 400)
+  }
+
+  function handleSelectResult(result) {
+    const detected = detectActivesFromText(result.ingredients_text || '')
+    setName(result.product_name || '')
+    setBrand(result.brands || '')
+    setSelectedIngredients(detected)
+    setQuery('')
+    setShowDropdown(false)
+    setSearchResults([])
+    setManualMode(true)
+  }
+
+  function handleManualMode() {
+    setShowDropdown(false)
+    setManualMode(true)
+  }
 
   function toggleIngredient(ing) {
     setSelectedIngredients((prev) =>
@@ -301,13 +490,26 @@ function ProductsPage({ products, onAdd, onDelete }) {
   }
 
   function handleAdd() {
-    if (!name.trim()) { setError('Please enter a product name.'); return }
-    if (selectedIngredients.length === 0) { setError('Please select at least one active ingredient.'); return }
-    setError('')
-    onAdd({ name: name.trim(), ingredients: selectedIngredients, tag })
+    if (!name.trim()) { setFormError('Please enter a product name.'); return }
+    if (selectedIngredients.length === 0) { setFormError('Please select at least one active ingredient.'); return }
+    setFormError('')
+    onAdd({ name: name.trim(), brand: brand.trim(), ingredients: selectedIngredients, tag })
     setName('')
+    setBrand('')
     setSelectedIngredients([])
     setTag('am')
+    setManualMode(false)
+    setQuery('')
+  }
+
+  function handleReset() {
+    setManualMode(false)
+    setName('')
+    setBrand('')
+    setSelectedIngredients([])
+    setFormError('')
+    setQuery('')
+    setSearchResults([])
   }
 
   return (
@@ -315,56 +517,140 @@ function ProductsPage({ products, onAdd, onDelete }) {
       <div className="card">
         <div className="card-header">
           <span className="card-title">Add Product</span>
+          {manualMode && (
+            <button className="card-action" onClick={handleReset}>← Back to search</button>
+          )}
         </div>
         <div className="card-body form-body">
-          <div className="form-group">
-            <label className="form-label">Product Name</label>
-            <input
-              className="form-input"
-              placeholder="e.g. The Ordinary Retinol 1%"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
-            />
-          </div>
 
-          <div className="form-group">
-            <label className="form-label">Active Ingredients</label>
-            <div className="ingredient-picker">
-              {ACTIVES.map((ing) => (
-                <button
-                  key={ing}
-                  className={`ing-btn ${selectedIngredients.includes(ing) ? 'selected' : ''}`}
-                  onClick={() => toggleIngredient(ing)}
-                  type="button"
-                >
-                  {ing}
+          {/* ── Search bar ── */}
+          {!manualMode && (
+            <div className="form-group search-group" ref={searchRef}>
+              <label htmlFor="product-search" className="form-label">Search Open Beauty Facts</label>
+              <div className="search-input-wrap">
+                <span className="search-icon" aria-hidden="true">⌕</span>
+                <input
+                  id="product-search"
+                  className="form-input search-input"
+                  placeholder="Search by product name…"
+                  value={query}
+                  onChange={handleQueryChange}
+                  autoComplete="off"
+                  aria-autocomplete="list"
+                  aria-expanded={showDropdown}
+                  aria-controls="search-dropdown"
+                  role="combobox"
+                />
+                {searching && <span className="search-spinner" role="status" aria-label="Searching…" />}
+              </div>
+
+              {searchError && <div className="form-error" role="alert">{searchError}</div>}
+
+              {showDropdown && (
+                <div className="search-dropdown" id="search-dropdown" role="listbox">
+                  {searching && searchResults.length === 0 && (
+                    <div className="dropdown-status">Searching…</div>
+                  )}
+                  {!searching && searchResults.length === 0 && query.trim() && (
+                    <div className="dropdown-status">No results found.</div>
+                  )}
+                  {searchResults.map((r, i) => (
+                    <button
+                      key={i}
+                      className="dropdown-item"
+                      onPointerDown={() => handleSelectResult(r)}
+                      type="button"
+                    >
+                      <span className="dropdown-name">{r.product_name}</span>
+                      {r.brands && <span className="dropdown-brand">{r.brands}</span>}
+                    </button>
+                  ))}
+                  <button className="dropdown-manual" onPointerDown={handleManualMode} type="button">
+                    Not finding your product? Add manually
+                  </button>
+                </div>
+              )}
+
+              {!showDropdown && !query && (
+                <button className="manual-link" onClick={handleManualMode} type="button">
+                  Prefer to add manually?
                 </button>
-              ))}
+              )}
             </div>
-          </div>
+          )}
 
-          <div className="form-group">
-            <label className="form-label">Use in Routine</label>
-            <div className="tag-picker">
-              {['am', 'pm', 'both'].map((t) => (
-                <button
-                  key={t}
-                  className={`tag-btn tag-btn-${t} ${tag === t ? 'selected' : ''}`}
-                  onClick={() => setTag(t)}
-                  type="button"
-                >
-                  {t === 'am' ? '☀ AM' : t === 'pm' ? '☾ PM' : '✦ Both'}
-                </button>
-              ))}
-            </div>
-          </div>
+          {/* ── Product form (shown after selecting a result or going manual) ── */}
+          {manualMode && (
+            <>
+              <div className="form-group">
+                <label htmlFor="product-name" className="form-label">Product Name</label>
+                <input
+                  id="product-name"
+                  className="form-input"
+                  placeholder="e.g. The Ordinary Retinol 1%"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
+              </div>
 
-          {error && <div className="form-error">{error}</div>}
+              <div className="form-group">
+                <label htmlFor="product-brand" className="form-label">Brand <span className="form-label-opt">(optional)</span></label>
+                <input
+                  id="product-brand"
+                  className="form-input"
+                  placeholder="e.g. The Ordinary"
+                  value={brand}
+                  onChange={(e) => setBrand(e.target.value)}
+                />
+              </div>
 
-          <button className="btn btn-primary" style={{ width: '100%' }} onClick={handleAdd}>
-            + Add Product
-          </button>
+              <div className="form-group">
+                <label className="form-label" id="actives-label">Active Ingredients</label>
+                {selectedIngredients.length > 0 && (
+                  <div className="detected-note">
+                    Detected from ingredients list — review and adjust as needed.
+                  </div>
+                )}
+                <div className="ingredient-picker" aria-labelledby="actives-label" role="group">
+                  {ACTIVES.map((ing) => (
+                    <button
+                      key={ing}
+                      className={`ing-btn ${selectedIngredients.includes(ing) ? 'selected' : ''}`}
+                      onClick={() => toggleIngredient(ing)}
+                      type="button"
+                      aria-pressed={selectedIngredients.includes(ing)}
+                    >
+                      {ing}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label" id="routine-tag-label">Use in Routine</label>
+                <div className="tag-picker" role="group" aria-labelledby="routine-tag-label">
+                  {['am', 'pm', 'both'].map((t) => (
+                    <button
+                      key={t}
+                      className={`tag-btn tag-btn-${t} ${tag === t ? 'selected' : ''}`}
+                      onClick={() => setTag(t)}
+                      type="button"
+                      aria-pressed={tag === t}
+                    >
+                      <span aria-hidden="true">{t === 'am' ? '☀' : t === 'pm' ? '☾' : '✦'}</span>
+                      {' '}{t === 'am' ? 'AM' : t === 'pm' ? 'PM' : 'Both'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {formError && <div className="form-error" role="alert">{formError}</div>}
+
+              <button className="btn btn-primary" style={{ width: '100%' }} onClick={handleAdd}>
+                + Add Product
+              </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -381,6 +667,7 @@ function ProductsPage({ products, onAdd, onDelete }) {
               <div key={p.id} className="cabinet-item">
                 <div className="cabinet-item-main">
                   <div className="cabinet-name">{p.name}</div>
+                  {p.brand && <div className="cabinet-brand">{p.brand}</div>}
                   <div className="cabinet-meta">
                     <span className={`routine-tag tag-${p.tag}`}>{p.tag.toUpperCase()}</span>
                     <div className="ingredient-tags">
@@ -435,12 +722,20 @@ function RoutinePage({ products, amRoutine, pmRoutine, onUpdateRoutine }) {
 
   return (
     <>
-      <div className="view-tabs">
-        <button className={`view-tab ${view === 'am' ? 'active' : ''}`} onClick={() => setView('am')}>
-          ☀ AM Routine
+      <div className="view-tabs" role="group" aria-label="Routine view">
+        <button
+          className={`view-tab ${view === 'am' ? 'active' : ''}`}
+          onClick={() => setView('am')}
+          aria-pressed={view === 'am'}
+        >
+          <span aria-hidden="true">☀</span> AM Routine
         </button>
-        <button className={`view-tab ${view === 'pm' ? 'active' : ''}`} onClick={() => setView('pm')}>
-          ☾ PM Routine
+        <button
+          className={`view-tab ${view === 'pm' ? 'active' : ''}`}
+          onClick={() => setView('pm')}
+          aria-pressed={view === 'pm'}
+        >
+          <span aria-hidden="true">☾</span> PM Routine
         </button>
       </div>
 
@@ -475,9 +770,9 @@ function RoutinePage({ products, amRoutine, pmRoutine, onUpdateRoutine }) {
                       </div>
                     </div>
                     <div className="step-actions">
-                      <button className="icon-btn" onClick={() => moveUp(i)} disabled={i === 0} title="Move up">↑</button>
-                      <button className="icon-btn" onClick={() => moveDown(i)} disabled={i === routine.length - 1} title="Move down">↓</button>
-                      <button className="icon-btn remove" onClick={() => removeFromRoutine(id)} title="Remove">✕</button>
+                      <button className="icon-btn" onClick={() => moveUp(i)} disabled={i === 0} aria-label={`Move ${p.name} up`}>↑</button>
+                      <button className="icon-btn" onClick={() => moveDown(i)} disabled={i === routine.length - 1} aria-label={`Move ${p.name} down`}>↓</button>
+                      <button className="icon-btn remove" onClick={() => removeFromRoutine(id)} aria-label={`Remove ${p.name} from routine`}>✕</button>
                     </div>
                   </div>
                 )
@@ -536,12 +831,13 @@ function GoalsPage({ products, selectedGoals, onToggleGoal }) {
           <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16 }}>
             Select the goals you want to work toward.
           </p>
-          <div className="goals-picker">
+          <div className="goals-picker" role="group" aria-label="Skin goals">
             {allGoals.map((goal) => (
               <button
                 key={goal}
                 className={`goal-btn ${selectedGoals.includes(goal) ? 'selected' : ''}`}
                 onClick={() => onToggleGoal(goal)}
+                aria-pressed={selectedGoals.includes(goal)}
               >
                 {goal}
               </button>
@@ -561,14 +857,27 @@ function GoalsPage({ products, selectedGoals, onToggleGoal }) {
                   <div key={gs.goal} className="goal-row">
                     <div className="goal-row-top">
                       <span className="goal-name">{gs.goal}</span>
-                      <span className="goal-pct">{gs.score}%</span>
+                      <span className="goal-pct" aria-hidden="true">{gs.score}%</span>
                     </div>
-                    <div className="progress-bar">
+                    <div
+                      className="progress-bar"
+                      role="progressbar"
+                      aria-valuenow={gs.score}
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                      aria-label={`${gs.goal}: ${gs.score}%`}
+                    >
                       <div className="progress-fill" style={{ width: `${gs.score}%` }} />
                     </div>
-                    <div className="active-chips">
+                    {/* ✓/✕ prefix means status is conveyed by text, not color alone */}
+                    <div className="active-chips" aria-label={`Required actives for ${gs.goal}`}>
                       {GOAL_ACTIVES[gs.goal].map((a) => (
-                        <span key={a} className={`active-chip ${gs.present.includes(a) ? 'have' : 'missing'}`}>{a}</span>
+                        <span
+                          key={a}
+                          className={`active-chip ${gs.present.includes(a) ? 'have' : 'missing'}`}
+                        >
+                          {gs.present.includes(a) ? '✓ ' : '✕ '}{a}
+                        </span>
                       ))}
                     </div>
                   </div>
@@ -627,11 +936,11 @@ function AccountPage() {
       </div>
       <div className="card">
         <div className="card-header">
-          <span className="card-title">About GlowCheck</span>
+          <span className="card-title">About GlowStack</span>
         </div>
         <div className="card-body">
           <p style={{ fontSize: 14, color: 'var(--text-muted)', lineHeight: 1.8 }}>
-            GlowCheck helps you build a safe, effective skincare routine by tracking your products,
+            GlowStack helps you build a safe, effective skincare routine by tracking your products,
             detecting ingredient conflicts, and guiding you toward your skin goals.
           </p>
           <p style={{ fontSize: 14, color: 'var(--text-muted)', lineHeight: 1.8, marginTop: 12 }}>
