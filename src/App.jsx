@@ -278,7 +278,7 @@ function Sidebar({ active, onNav, isOpen, onClose }) {
       {isOpen && <div className="sidebar-overlay" onClick={onClose} />}
       <aside className={`sidebar ${isOpen ? 'sidebar-open' : ''}`}>
         <div className="sidebar-logo">
-          <GlowStackLogo style={{ height: 40, width: 'auto', flexShrink: 0 }} />
+          <GlowStackLogo style={{ height: 48, width: 'auto', flexShrink: 0 }} />
           <button className="sidebar-close" onClick={onClose} aria-label="Close menu">✕</button>
         </div>
         <nav className="nav-section" aria-label="Main navigation">

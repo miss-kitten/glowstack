@@ -24,7 +24,9 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 20px 20px 18px;
+  height: 80px;
+  padding: 0 20px;
+  flex-shrink: 0;
   border-bottom: 0.5px solid var(--border);
   margin-bottom: 12px;
 }
@@ -40,7 +42,7 @@
   gap: 10px;
   padding: 8px 12px;
   border-radius: 9px;
-  font-size: 13.5px;
+  font-size: 14px;
   font-weight: 500;
   color: var(--text-muted);
   background: none;
@@ -121,7 +123,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 18px 32px;
+  height: 80px;
+  padding: 0 32px;
   background: var(--bg);
   border-bottom: 0.5px solid var(--border);
   position: sticky;
@@ -130,7 +133,7 @@
 }
 
 .topbar-title h2 {
-  font-size: 19px;
+  font-size: 20px;
   font-weight: 700;
   letter-spacing: -0.3px;
   font-family: var(--serif);
@@ -228,7 +231,7 @@
 }
 
 .stat-label {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.6px;
@@ -283,7 +286,7 @@
 }
 
 .card-title {
-  font-size: 13.5px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--text-heading);
 }
@@ -353,7 +356,7 @@
 
 .advisory-pill {
   display: inline-block;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   background: rgba(124, 42, 20, 0.12);
   color: var(--conflict-text);
@@ -381,7 +384,7 @@
 
 .routine-name {
   flex: 1;
-  font-size: 13.5px;
+  font-size: 14px;
   font-weight: 500;
   color: var(--text-heading);
   min-width: 0;
@@ -391,7 +394,7 @@
 }
 
 .routine-tag {
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
   padding: 2px 8px;
   border-radius: 20px;
@@ -412,7 +415,7 @@
   border-radius: 50%;
   background: var(--primary-light);
   color: var(--primary-dark);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   display: flex;
   align-items: center;
@@ -430,7 +433,7 @@
 
 /* --primary-dark on #FBEAF0 = 6.23:1 ✓ */
 .ing-tag {
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 600;
   padding: 2px 7px;
   border-radius: 20px;
@@ -456,7 +459,7 @@
   padding: 9px 12px;
   border: 0.5px solid var(--border);
   border-radius: 8px;
-  font-size: 13.5px;
+  font-size: 14px;
   font-family: var(--sans);
   color: var(--text-heading);
   background: #FDFAF7;
@@ -486,7 +489,7 @@
 }
 
 .search-section-label {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -495,7 +498,7 @@
 }
 
 .search-section-note {
-  font-size: 11.5px;
+  font-size: 12px;
   color: var(--text-muted);
   margin: 0 0 10px;
 }
@@ -517,7 +520,7 @@
 }
 
 .form-divider-label {
-  font-size: 11.5px;
+  font-size: 12px;
   color: var(--text-muted);
   white-space: nowrap;
   flex-shrink: 0;
@@ -640,7 +643,7 @@
 }
 
 .dropdown-name {
-  font-size: 13.5px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--text-heading);
   white-space: nowrap;
@@ -776,7 +779,7 @@
 }
 
 .sub-acid-label {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -790,7 +793,7 @@
 }
 
 .ing-btn-sub {
-  font-size: 11px;
+  font-size: 12px;
   padding: 4px 10px;
 }
 
@@ -851,7 +854,7 @@
 .cabinet-item-main { flex: 1; min-width: 0; }
 
 .cabinet-name {
-  font-size: 13.5px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--text-heading);
   white-space: nowrap;
@@ -954,7 +957,7 @@
 .step-info { flex: 1; min-width: 0; }
 
 .step-name {
-  font-size: 13.5px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--text-heading);
   margin-bottom: 4px;
@@ -966,7 +969,7 @@
 
 /* --conflict-text on #F5C4B3 = 6.19:1 ✓ */
 .conflict-badge {
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
   background: #F5C4B3;
   color: var(--conflict-text);
@@ -1039,7 +1042,7 @@
 .available-info { flex: 1; min-width: 0; }
 
 .available-name {
-  font-size: 13.5px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--text-heading);
   margin-bottom: 4px;
@@ -1099,7 +1102,7 @@
   justify-content: space-between;
 }
 
-.goal-name { font-size: 13.5px; font-weight: 600; color: var(--text-heading); }
+.goal-name { font-size: 14px; font-weight: 600; color: var(--text-heading); }
 
 .goal-pct { font-size: 13px; font-weight: 700; color: var(--primary); }
 
@@ -1125,7 +1128,7 @@
 }
 
 .active-chip {
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 600;
   padding: 2px 8px;
   border-radius: 20px;
